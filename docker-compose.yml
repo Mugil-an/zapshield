@@ -1,0 +1,86 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: zapshield-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: zapshield
+      POSTGRES_USER: zapshield_user
+      POSTGRES_PASSWORD: changeme
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./src/db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zapshield_user -d zapshield"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: zapshield-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: zapshield
+      DB_USER: zapshield_user
+      DB_PASSWORD: changeme
+      JWT_SECRET: zapshield-production-jwt-secret-min-32-chars
+      JWT_EXPIRES_IN: 7d
+      ADMIN_JWT_SECRET: zapshield-admin-jwt-secret-min-32-chars
+      ADMIN_JWT_EXPIRES_IN: 8h
+      RAZORPAY_KEY_ID: rzp_test_xxxxxxxxxxxxx
+      RAZORPAY_KEY_SECRET: xxxxxxxxxxxxxxxxxxxxxxxx
+      OPEN_METEO_BASE_URL: https://api.open-meteo.com/v1
+      ML_SERVICE_URL: http://ml-service:5001
+      OTP_EXPIRY_SECONDS: 300
+      DEV_MOCK_OTP: 123456
+      TRIGGER_POLL_INTERVAL_MINUTES: 15
+    volumes:
+      - backend_logs:/app/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  ml-service:
+    image: python:3.11-slim
+    container_name: zapshield-ml
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    command: |
+      sh -c "pip install flask scikit-learn numpy --quiet && echo '
+      from flask import Flask, request, jsonify
+      app = Flask(__name__)
+      @app.route(\"/fraud-check\", methods=[\"POST\"])
+      def fc(): return jsonify({\"anomaly_score\": 0.0})
+      @app.route(\"/score-zone\", methods=[\"POST\"])
+      def sz(): return jsonify({\"risk_multiplier\": 1.0})
+      @app.route(\"/health\")
+      def h(): return jsonify({\"status\": \"ok\"})
+      if __name__ == \"__main__\": app.run(host=\"0.0.0.0\", port=5001)
+      ' > ml_app.py && python ml_app.py"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:5001/health')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  postgres_data:
+  backend_logs:

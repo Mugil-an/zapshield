@@ -1,0 +1,19 @@
+{
+  "rawRiders": [
+    {
+      "id": "37dc45aa-37ac-43db-aa60-28cf81dd2b8f",
+      "name": "Ravi Kumar",
+      "rider_active": true,
+      "policy_id": "0d88f461-05c8-4b40-ae02-28f442144b5a",
+      "status": "active",
+      "coverage_end": "2026-03-22T18:29:59.000Z",
+      "payment_verified": true,
+      "zone_id": "8996d9fa-728b-46e5-b57a-5260a46688e2"
+    }
+  ],
+  "eligible": [
+    {
+      "name": "Ravi Kumar"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "zapshield-backend",
+  "version": "0.1.0",
+  "description": "ZapShield parametric income-protection backend for Q-commerce riders in India",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "NODE_ENV=production node src/server.js",
+    "dev": "NODE_ENV=development nodemon src/server.js",
+    "test": "jest --runInBand"
+  },
+  "keywords": [
+    "insurance",
+    "parametric",
+    "income-protection",
+    "q-commerce",
+    "zapshield"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "express-rate-limit": "^8.3.1",
+    "express-validator": "^7.2.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "node-cron": "^3.0.3",
+    "pg": "^8.11.5",
+    "razorpay": "^2.9.3",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
+    "supertest": "^7.0.0"
+  }
+}
