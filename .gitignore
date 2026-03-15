@@ -19,3 +19,16 @@ logs
 # IDE
 .vscode
 .idea
+
+# Debug and temp files
+*.json
+!package.json
+!package-lock.json
+check-db.js
+debug-*.js
+fix-*.js
+reset-*.js
+restart-*.js
+test-http.js
+test-sim.js
+scripts/test-*.js
