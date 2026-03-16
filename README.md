@@ -743,25 +743,31 @@ zapshield/
 ├── Dockerfile
 ├── docker-compose.yml                 <- Start all 3 services: docker-compose up -d
 ├── .env.example                       <- Environment variable template
-|
+│
 ├── src/
 │   ├── server.js                      <- Entry point + trigger engine start
 │   ├── app.js                         <- Express config, Helmet, rate limiting
+│
 │   ├── config/
 │   │   ├── db.js                      <- PostgreSQL pool, slow query logging
 │   │   ├── razorpay.js                <- Razorpay test mode client
 │   │   └── constants.js               <- All business constants (never hardcoded)
+│
 │   ├── db/
 │   │   ├── schema.sql                 <- Source-of-truth DDL, 8 tables
 │   │   └── seed.sql                   <- Dev seed: 5 zones, 3 riders, 1 admin
+│
 │   ├── middleware/
 │   │   ├── auth.js                    <- Rider JWT -> req.rider
 │   │   ├── adminAuth.js               <- Admin JWT + role check -> req.admin
 │   │   ├── errorHandler.js            <- Global error handler, PG error codes mapped
 │   │   └── validate.js                <- express-validator wrapper
+│
 │   ├── routes/                        <- auth, riders, zones, policies,
-│   |                                     claims, payouts, triggers, admin
+│   │                                     claims, payouts, triggers, admin
+│
 │   ├── controllers/                   <- One per domain module
+│
 │   └── services/
 │       ├── trigger.engine.js          <- CORE: cron -> detect -> fraud -> payout
 │       ├── weather.service.js         <- Open-Meteo forecast + air quality
@@ -770,12 +776,19 @@ zapshield/
 │       ├── payout.service.js          <- Razorpay mock payout execution
 │       ├── darkstore.service.js       <- Mock Zepto/Blinkit operational API
 │       └── curfew.service.js          <- Mock government alert feed
-|
-└── tests/
-    ├── auth.test.js
-    ├── policy.test.js
-    ├── trigger.test.js
-    └── fraud.test.js
+│
+├── tests/
+│   ├── auth.test.js
+│   ├── policy.test.js
+│   ├── trigger.test.js
+│   └── fraud.test.js
+│
+└── ml_service/                        <- Python ML microservice
+    ├── Dockerfile
+    ├── requirements.txt
+    ├── app.py                         <- Flask: /score-zone, /fraud-check, /model-meta
+    ├── train_zone_risk.py             <- GBR trained on Open-Meteo 365-day data
+    └── train_fraud_model.py           <- Isolation Forest on 1,050 synthetic profiles
 ```
 
 ---

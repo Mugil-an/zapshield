@@ -32,3 +32,4 @@ restart-*.js
 test-http.js
 test-sim.js
 scripts/test-*.js
+.ml_service/models/
