@@ -1,3 +1,9 @@
+version: "3.9"
+
+# ZapShield — docker-compose.yml
+# Start all services: docker-compose up -d
+# Rebuild ML service after model changes: docker-compose build ml-service && docker-compose up -d ml-service
+
 services:
   postgres:
     image: postgres:15-alpine
@@ -28,6 +34,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      ml-service:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -56,31 +64,37 @@ services:
       retries: 3
       start_period: 40s
 
+  # ── ML Microservice ─────────────────────────────────────────
+  # CHANGED: Replaces the inline dummy python script with a proper
+  # Docker build that trains real GBR + Isolation Forest models.
+  #
+  # Endpoints:
+  #   POST /score-zone    → real GBR risk multiplier (0.80–1.40)
+  #   POST /fraud-check   → real Isolation Forest anomaly score (0.0–1.0)
+  #   GET  /health        → model load status
+  #   GET  /model-meta    → feature importances (for Explainability Card)
   ml-service:
-    image: python:3.11-slim
+    build:
+      context: ./ml_service
+      dockerfile: Dockerfile
     container_name: zapshield-ml
     restart: unless-stopped
     ports:
       - "5001:5001"
-    command: |
-      sh -c "pip install flask scikit-learn numpy --quiet && echo '
-      from flask import Flask, request, jsonify
-      app = Flask(__name__)
-      @app.route(\"/fraud-check\", methods=[\"POST\"])
-      def fc(): return jsonify({\"anomaly_score\": 0.0})
-      @app.route(\"/score-zone\", methods=[\"POST\"])
-      def sz(): return jsonify({\"risk_multiplier\": 1.0})
-      @app.route(\"/health\")
-      def h(): return jsonify({\"status\": \"ok\"})
-      if __name__ == \"__main__\": app.run(host=\"0.0.0.0\", port=5001)
-      ' > ml_app.py && python ml_app.py"
+    volumes:
+      # Mount models volume so weekly retraining persists without rebuild
+      - ml_models:/app/models
+    environment:
+      PORT: 5001
+      FLASK_DEBUG: "false"
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:5001/health')\""]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 90s   # longer: model training runs at build time
 
 volumes:
   postgres_data:
   backend_logs:
+  ml_models:      # NEW: persists trained model files across container restarts
