@@ -2,9 +2,13 @@
 ### Parametric Income Protection for India's Q-Commerce Delivery Riders
 
 > **Guidewire DEVTrails 2026 — University Hackathon · Phase 1**
+> 
 > **Institution:** PSG College of Technology, Coimbatore, Tamil Nadu
+> 
 > **Persona:** Zepto / Blinkit Q-Commerce Delivery Riders
+> 
 > **Coverage:** Lost Income Only · **Pricing:** Weekly Only · **Claims:** Parametric Auto-Trigger Only
+> 
 > **Repository:** https://github.com/sundaresansrs/zapshield
 
 ---
